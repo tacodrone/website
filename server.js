@@ -15,7 +15,7 @@
 
 // testing = false
 // deployment = true
-var deployment = true;
+var deployment = false;
 
 // Express import
 var express = require('express');
@@ -45,9 +45,20 @@ app.use(morgan('dev'));
 
 var port = ((deployment) ? (port = process.env.PORT || 80) : (port = process.env.PORT || 8090));
 
-// display index file
 app.get("/", function(req, res) {
-	res.render("index")
+	res.render("index");
+});
+
+app.post("/", function(req, res) {
+	res.send("post");
+});
+
+app.put("/", function(req, res) {
+	res.send("update");
+});
+
+app.delete("/", function(req, res) {
+	res.send("delete");
 });
 
 app.listen(port);
