@@ -15,7 +15,7 @@
 
 // testing = false
 // deployment = true
-var deployment = false;
+var deployment = true;
 
 // Express import
 var express = require('express');
