@@ -24,6 +24,9 @@ var app = express();
 // Parser import
 var bodyParser = require('body-parser');
 
+// Sequalize
+var Sequelize = require('sequelize');
+
 // Debug Morgan import
 var morgan = require('morgan');
 
@@ -55,6 +58,46 @@ app.use(morgan('dev'));
 app.use("/assets", express.static('assets'));
 app.use("/images", express.static('images'));
 
+var match = process.env.DATABASE_URL.match(/postgres:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/)
+
+var sequalize 	= 	new Sequelize(match[5], match[1], match[2], {
+						dialect:  'postgres',
+						protocol: 'postgres',
+						port:     match[4],
+						host:     match[3],
+						logging: false,
+						omitNull: true,
+						dialectOptions: {
+						    ssl: true
+						}
+					});
+
+
+
+var User;
+
+function define_user(){
+
+	return 	sequalize.define('User',	{		
+				user_id: 	{
+								type: Sequelize.INTEGER,
+								primaryKey: true,
+		    					autoIncrement: true
+		    				},
+								
+				email: Sequelize.STRING
+
+			},	{
+				freezeTableName: true
+			});
+}
+
+User = define_user();
+
+User.sync().then(function(user){
+
+});
+
 // Check Email
 function email_check(email){
 	var email_pattern = new RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
@@ -78,10 +121,24 @@ app.post("/signup", function(req, res) {
 	];
 
 	MC.lists.subscribe({id: '31b20014f0', email:{email: email_value}, merge_vars: merge_vars, double_optin: false }, function(data) {
-		res.send('works');
+	
 	}, function(error) {
-		res.send(error);
+	
 	});
+
+	return  User.findOne({ where: { email: email_value }}).then(function(user_data){
+				if(user_data){
+					
+					data["name"] = "List_AlreadySubscribed"
+					return res.send(data)
+
+				}else{
+					return 	User.create({email: email_value}).then(function(create_data){
+								res.send('works');
+							});
+				}
+				
+			});
 
 });
 
