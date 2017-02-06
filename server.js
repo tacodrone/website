@@ -129,8 +129,7 @@ app.post("/signup", function(req, res) {
 	return  User.findOne({ where: { email: email_value }}).then(function(user_data){
 				if(user_data){
 					
-					data["name"] = "List_AlreadySubscribed"
-					return res.send(data)
+					return res.json({"name": "List_AlreadySubscribed"})
 
 				}else{
 					return 	User.create({email: email_value}).then(function(create_data){
