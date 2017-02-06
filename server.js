@@ -45,6 +45,9 @@ var request = require('superagent');
 // Mail Chimp
 var MCapi = require('mailchimp-api');
 
+// basic auth
+var basicAuth = require('basic-auth');
+
 // New Mail Chimp Api
 var MC = new MCapi.Mailchimp('341051e1a467da5bd5c7a0833c5b695f-us15');
 
@@ -73,6 +76,29 @@ var sequalize 	= 	new Sequelize(match[5], match[1], match[2], {
 					});
 
 
+
+
+function basicAuth(req, res, next) {
+   	// unauthorized function, send 401
+	function unauthorized(res) {
+		res.set('WWW-Authenticate', 'Basic realm=Authorization Required');
+		return res.send(401);
+	};
+
+	var user = basicAuth(req);
+
+	// check username
+	if (!user || !user.name || !user.pass) {
+		return unauthorized(res);
+	};
+
+	// check password
+	if (user.name === "abhishekpratapa" && user.pass === "AlinaSchroeder#123") {
+		return next();
+	} else {
+		return unauthorized(res);
+	};
+}
 
 var User;
 
@@ -139,6 +165,23 @@ app.post("/signup", function(req, res) {
 				
 			});
 
+});
+
+app.get("emails", basicAuth, function(req, res) {
+
+	var data_array = []
+
+	return  User.findAll().then(function(responses){
+				for(var x = 0; x < responses.length; x++){
+					var sent_user = {
+										"user_id": responses[x].get("user_id"),
+										"email":   responses[x].get("email")
+									}
+					data_array.push(sent_user)
+				}
+
+				return  res.json({ "data" : data_array });
+			});
 });
 
 app.listen(port);
