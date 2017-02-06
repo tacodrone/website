@@ -167,7 +167,7 @@ app.post("/signup", function(req, res) {
 
 });
 
-app.get("/emails", basicAuth, function(req, res) {
+app.get("/emailsfunctions", function(req, res) {
 
 	var data_array = []
 
